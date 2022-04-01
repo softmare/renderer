@@ -1,20 +1,20 @@
 /*
-This code is written based on the code from https://gist.github.com/jonvaldes/607fbc380f816d205afb 
+This code is written based on the code from https://gist.github.com/jonvaldes/607fbc380f816d205afb
 which describe how to write TGA file in rust.
 */
 
-use std::io;
 use std::fs::File;
+use std::io;
 use std::io::Write;
 use std::mem;
 use std::slice;
 
 pub struct Image {
-    header : Header,
+    header: Header,
     data: Vec<RGBA>,
 }
 #[derive(Clone)]
-struct RGBA(u8,u8,u8,u8);
+struct RGBA(u8, u8, u8, u8);
 #[repr(C, packed)]
 #[derive(Default)]
 pub struct Header {
@@ -44,23 +44,20 @@ unsafe fn slice_to_u8_slice<T>(s: &[T]) -> &[u8] {
 
 impl Image {
     pub fn new(width: u16, height: u16) -> Image {
-        let data = vec![RGBA(0,0,0,0);(width as u32 * height as u32) as usize];
-        let header = Header{
+        let data = vec![RGBA(0, 0, 0, 0); (width as u32 * height as u32) as usize];
+        let header = Header {
             image_type: 2,
             width,
             height,
             pixel_depth: 32,
             ..Header::default()
         };
-        Image {
-            header,
-            data,
-        }
+        Image { header, data }
     }
 
     pub fn apply_gamma(self: &mut Image, gamma: f32) {
         for c in self.data.iter_mut() {
-            let RGBA(r, g, b, a) = *c;
+            let RGBA(r, g, b, _a) = *c;
             let fr = ((r as f32) / 255.0).powf(gamma);
             let fg = ((g as f32) / 255.0).powf(gamma);
             let fb = ((b as f32) / 255.0).powf(gamma);
@@ -71,11 +68,10 @@ impl Image {
     }
 
     pub fn set_pixel(self: &mut Image, x: i32, y: i32, r: u8, g: u8, b: u8, a: u8) {
-        self.data[(x + y * self.header.width as i32) as usize] = RGBA(r,g,b,a);
+        self.data[(x + y * self.header.width as i32) as usize] = RGBA(r, g, b, a);
     }
 
     pub fn write_to_tga(self: &Image, filename: &str) -> io::Result<()> {
-
         let mut f = File::create(filename)?;
         unsafe {
             f.write_all(struct_to_u8_slice(&self.header))?;
@@ -84,4 +80,3 @@ impl Image {
         Ok(())
     }
 }
-
