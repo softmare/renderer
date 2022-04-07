@@ -67,8 +67,12 @@ impl Image {
         }
     }
 
-    pub fn set_pixel(self: &mut Image, x: i32, y: i32, r: u8, g: u8, b: u8, a: u8) {
-        self.data[(x + y * self.header.width as i32) as usize] = RGBA(r, g, b, a);
+    pub fn set_pixel(self: &mut Image, x: u16, y: u16, r: u8, g: u8, b: u8, a: u8) {
+        assert!(x < self.header.width);
+        assert!(y < self.header.height);
+        assert!(x >= 0);
+        assert!(y >= 0);
+        self.data[(x as i32 + y as i32 * self.header.width as i32) as usize] = RGBA(r, g, b, a);
     }
 
     pub fn write_to_tga(self: &Image, filename: &str) -> io::Result<()> {
