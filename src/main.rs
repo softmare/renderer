@@ -14,7 +14,7 @@ fn test_int() -> () {
     img.draw_line_bresenham_with_uint(30, 30, 200, 300);
     img.draw_line_bresenham_with_uint(300, 300, 200, 100);
     img.draw_line_bresenham_with_uint(500, 300, 100, 10);
-    img.write_to_tga("./target/debug/test2.tga").unwrap();
+    img.write_to_tga("./test2.tga").unwrap();
 }
 
 fn test_float() -> () {
@@ -23,5 +23,5 @@ fn test_float() -> () {
     img.draw_line_bresenham_with_float(30, 30, 200, 300);
     img.draw_line_bresenham_with_float(300, 300, 200, 100);
     img.draw_line_bresenham_with_float(500, 300, 100, 10);
-    img.write_to_tga("./target/debug/test1.tga").unwrap();
+    img.write_to_tga("./test1.tga").unwrap();
 }
