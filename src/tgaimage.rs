@@ -116,7 +116,7 @@ impl Image {
             adder = -1;
         }
         
-        println!("xa : {}, ya : {}", xa, ya);
+        // println!("xa : {}, ya : {}", xa, ya);
         for x  in xa as u16..xb as u16 {
             if error >= dx {
                 error -= dx;
