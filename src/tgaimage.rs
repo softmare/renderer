@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io;
 use std::io::Write;
 use std::mem;
+use std::mem::swap;
 use std::slice;
 
 pub struct Image {
@@ -44,7 +45,7 @@ unsafe fn slice_to_u8_slice<T>(s: &[T]) -> &[u8] {
 
 impl Image {
     pub fn new(width: u16, height: u16) -> Image {
-        let data = vec![RGBA(0, 0, 0, 0); (width as u32 * height as u32) as usize];
+        let data = vec![RGBA(0, 0, 0, 255); (width as u32 * height as u32) as usize];
         let header = Header {
             image_type: 2,
             width,
@@ -70,9 +71,58 @@ impl Image {
     pub fn set_pixel(self: &mut Image, x: u16, y: u16, r: u8, g: u8, b: u8, a: u8) {
         assert!(x < self.header.width);
         assert!(y < self.header.height);
-        assert!(x >= 0);
-        assert!(y >= 0);
         self.data[(x as i32 + y as i32 * self.header.width as i32) as usize] = RGBA(r, g, b, a);
+    }
+
+    pub fn draw_line_bresenham_with_float(self: &mut Image, x0 : u16, y0 : u16, x1 : u16, y1 : u16) {
+        let white = RGBA(255, 255, 255, 255);
+        let mut swaped = false;
+        let (mut xa,mut ya,mut xb,mut yb) = (x0, y0, x1, y1);
+        if xa > xb {
+            swap(&mut xa, &mut xb);
+            swap(&mut ya, &mut yb);
+        }   
+        let mut angle = (yb - ya) as f32 / (xb - xa) as f32;
+        if angle > 1. {
+            swaped = true;
+            angle = angle.recip();
+            swap(&mut xa, &mut ya);
+            swap(&mut xb, &mut yb);
+        }
+        for x in xa..xb {
+            let y = (ya as f32 + (x - xa) as f32 * angle) as u16; 
+            if swaped {
+                self.set_pixel(y, x, white.0, white.1, white.2, white.3);
+            } else {
+                self.set_pixel(x, y, white.0, white.1, white.2, white.3);
+            }
+        }
+    }
+
+
+    pub fn draw_line_bresenham_with_uint(self: &mut Image, x0 : u16, y0 : u16, x1 : u16, y1 : u16) {
+        let white = RGBA(255, 255, 255, 255);
+        let mut swaped = false;
+        let (mut xa,mut ya,mut xb,mut yb) = (x0, y0, x1, y1);
+        if xa > xb {
+            swap(&mut xa, &mut xb);
+            swap(&mut ya, &mut yb);
+        }   
+        let mut angle = (yb - ya) as f32 / (xb - xa) as f32;
+        if angle > 1. {
+            swaped = true;
+            angle = angle.recip();
+            swap(&mut xa, &mut ya);
+            swap(&mut xb, &mut yb);
+        }
+        for x in xa..xb {
+            let y = (ya as f32 + (x - xa) as f32 * angle) as u16; 
+            if swaped {
+                self.set_pixel(y, x, white.0, white.1, white.2, white.3);
+            } else {
+                self.set_pixel(x, y, white.0, white.1, white.2, white.3);
+            }
+        }
     }
 
     pub fn write_to_tga(self: &Image, filename: &str) -> io::Result<()> {
